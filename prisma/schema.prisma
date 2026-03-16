@@ -1,0 +1,30 @@
+generator client {
+  provider        = "prisma-client-js"
+  // This tells Prisma we want to use Postgres extensions
+  previewFeatures = ["postgresqlExtensions"] 
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+// 1. The main Document table
+model Document {
+  id        String          @id @default(cuid())
+  filename  String          // e.g., "employee_handbook.pdf"
+  createdAt DateTime        @default(now())
+  
+  // A document can have many chunks
+  chunks    DocumentChunk[] 
+}
+
+// 2. The Chunks table (where the magic happens)
+model DocumentChunk {
+  id         String   @id @default(uuid())
+  text       String
+  embedding  Unsupported("vector(768)")
+  pageNumber Int?     // <--- Add this line
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id])
+}
